@@ -1,0 +1,42 @@
+name: Daily Briefing
+
+on:
+  schedule:
+    - cron: "0 16 * * *"  # 8:00 AM PST (UTC-8) = 16:00 UTC
+                           # Note: shifts to 9 AM during PDT (daylight saving)
+  workflow_dispatch:        # lets you trigger manually from GitHub UI
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate briefing
+        env:
+          NEWS_API_KEY:       ${{ secrets.NEWS_API_KEY }}
+          GEMINI_API_KEY:     ${{ secrets.GEMINI_API_KEY }}
+          EMAIL_FROM:         ${{ secrets.EMAIL_FROM }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          EMAIL_TO:           ${{ secrets.EMAIL_TO }}
+        run: python generate_briefing.py
+
+      - name: Commit and push index.html
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "briefing: $(date +'%Y-%m-%d')"
+          git push
