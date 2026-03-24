@@ -4,19 +4,17 @@
 import os
 import re
 import json
-import smtplib
 import requests
 from datetime import datetime, timedelta, timezone
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from groq import Groq
 
 # ── Config (all from environment variables / GitHub Secrets) ───────────────────
-NEWS_API_KEY     = os.environ["NEWS_API_KEY"]
-GROQ_API_KEY     = os.environ["GROQ_API_KEY"]
-EMAIL_FROM       = os.environ["EMAIL_FROM"]        # your gmail address
-EMAIL_PASSWORD   = os.environ["EMAIL_APP_PASSWORD"] # gmail app password
-EMAIL_TO         = os.environ["EMAIL_TO"]           # can be same as EMAIL_FROM
+NEWS_API_KEY      = os.environ["NEWS_API_KEY"]
+GROQ_API_KEY      = os.environ["GROQ_API_KEY"]
+EMAIL_FROM        = os.environ["EMAIL_FROM"]
+EMAIL_TO          = os.environ["EMAIL_TO"]
+MAILJET_API_KEY   = os.environ["MAILJET_API_KEY"]
+MAILJET_SECRET    = os.environ["MAILJET_SECRET_KEY"]
 
 client = Groq(api_key=GROQ_API_KEY)
 
@@ -378,18 +376,21 @@ def build_html(sections: dict) -> str:
 
 # ── Email ──────────────────────────────────────────────────────────────────────
 def send_email(html_content: str):
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"☀️ Your Morning Brief — {TODAY}"
-    msg["From"]    = EMAIL_FROM
-    msg["To"]      = EMAIL_TO
-    msg.attach(MIMEText(html_content, "html"))
-
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.ehlo()
-        server.starttls()
-        server.login(EMAIL_FROM, EMAIL_PASSWORD)
-        server.sendmail(EMAIL_FROM, EMAIL_TO, msg.as_string())
-    print("✅ Email sent.")
+    resp = requests.post(
+        "https://api.mailjet.com/v3.1/send",
+        auth=(MAILJET_API_KEY, MAILJET_SECRET),
+        json={
+            "Messages": [{
+                "From": {"Email": EMAIL_FROM, "Name": "Morning Brief"},
+                "To":   [{"Email": EMAIL_TO}],
+                "Subject": f"☀️ Your Morning Brief — {TODAY}",
+                "HTMLPart": html_content,
+            }]
+        },
+        timeout=15,
+    )
+    resp.raise_for_status()
+    print(f"✅ Email sent via Mailjet. Status: {resp.status_code}")
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────
