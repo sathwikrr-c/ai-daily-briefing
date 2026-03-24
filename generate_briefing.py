@@ -24,10 +24,11 @@ TODAY = datetime.now().strftime("%B %d, %Y")
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 def fetch_articles(query: str, n: int = 12) -> list[dict]:
-    since = (datetime.now(timezone.utc) - timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    # NewsAPI free plan has a 24h delay, so we skip the `from` filter
+    # and sort by publishedAt to get the most recent available articles
     resp = requests.get(
         "https://newsapi.org/v2/everything",
-        params={"q": query, "from": since, "sortBy": "relevancy",
+        params={"q": query, "sortBy": "publishedAt",
                 "language": "en", "pageSize": n, "apiKey": NEWS_API_KEY},
         timeout=10,
     )
