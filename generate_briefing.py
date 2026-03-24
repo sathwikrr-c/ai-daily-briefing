@@ -105,17 +105,34 @@ Return ONLY a JSON object with these keys:
 
 
 def smart_conversation_starters() -> list[dict]:
-    prompt = f"""Today is {TODAY}. You write the Morning Brew "be smart in conversations" section.
+    # Pull from sources Morning Brew itself aggregates from
+    articles = fetch_articles(
+        'site:businessinsider.com OR site:axios.com OR site:fastcompany.com OR site:bloomberg.com OR site:theathletic.com',
+        15
+    )
+    if not articles:
+        # fallback: broad interesting business/culture news
+        articles = fetch_articles('business OR culture OR science OR economy interesting surprising', 15)
 
-Generate 3 surprising, fascinating, or counterintuitive things worth knowing this week.
-Topics can span: business, science, history, technology, psychology, geopolitics, culture.
-Goal: the reader sounds thoughtful and interesting at dinner or in a meeting.
+    blurbs = "\n\n".join(
+        f"[{i+1}] {a['title']} ({a['source']['name']})\n{a.get('description', '')}"
+        for i, a in enumerate(articles[:12])
+    )
+
+    prompt = f"""Today is {TODAY}. You write exactly like Morning Brew's "Be Smart in Conversations" section.
+
+Morning Brew's style: witty, conversational, treats readers like smart friends. Each item is a real story that makes someone sound informed and interesting — not a trivia fact, but actual news or business insight repackaged with a human angle.
+
+Here are today's real news articles to draw from:
+{blurbs}
+
+Pick the 3 most interesting/surprising stories that fit Morning Brew's vibe. Rewrite them in Morning Brew's tone — punchy, a little clever, zero fluff.
 
 Return ONLY a JSON array of 3 objects with these keys:
-- topic_emoji   (emoji + short label, e.g. "🧠 Psychology")
-- headline      (1 catchy line)
-- fact          (2–3 sentences — the actual interesting substance)
-- drop_it       (a natural conversation opener, e.g. "Next time someone says X, mention that...")"""
+- topic_emoji   (emoji + short label, e.g. "💰 Business" or "🌍 World")
+- headline      (catchy 1-liner, Morning Brew style)
+- fact          (2–3 sentences written conversationally, like you're telling a smart friend)
+- drop_it       (natural way to bring this up, e.g. "Next time someone asks about X, mention...")"""
     result = parse_json(ask_groq(prompt))
     return result if isinstance(result, list) else []
 
