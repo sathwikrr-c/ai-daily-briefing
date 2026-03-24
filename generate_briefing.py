@@ -36,7 +36,7 @@ def fetch_articles(query: str, n: int = 12) -> list[dict]:
 
 
 def ask_groq(prompt: str) -> str:
-    for model in ["llama3-70b-8192", "llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
+    for model in ["llama-3.3-70b-versatile", "llama-3.1-70b-versatile", "llama-3.1-8b-instant"]:
         try:
             response = client.chat.completions.create(
                 model=model,
