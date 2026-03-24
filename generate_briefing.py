@@ -36,7 +36,7 @@ def fetch_articles(query: str, n: int = 12) -> list[dict]:
 
 
 def ask_groq(prompt: str) -> str:
-    for model in ["llama-3.1-8b-instant", "gemma2-9b-it", "llama3-8b-8192"]:
+    for model in ["llama3-70b-8192", "llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
         try:
             response = client.chat.completions.create(
                 model=model,
@@ -50,14 +50,26 @@ def ask_groq(prompt: str) -> str:
 
 
 def parse_json(text: str):
-    """Pull first JSON array or object out of model output."""
-    for pat in (r"\[[\s\S]*?\]", r"\{[\s\S]*?\}"):
+    """Robustly extract JSON array or object from model output."""
+    # 1. Strip markdown code fences
+    text = re.sub(r"```(?:json)?", "", text).strip()
+
+    # 2. Try parsing the whole response
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    # 3. Greedy search for array first, then object
+    for pat in (r"\[[\s\S]*\]", r"\{[\s\S]*\}"):
         m = re.search(pat, text)
         if m:
             try:
                 return json.loads(m.group())
             except json.JSONDecodeError:
                 pass
+
+    print(f"⚠️ JSON parse failed. Raw response:\n{text[:300]}")
     return None
 
 
