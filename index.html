@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Morning Brief</title>
+  <style>
+    :root {
+      --bg: #f8f9fa; --surface: #fff; --border: #e9ecef;
+      --text: #212529; --muted: #6c757d; --accent: #4f46e5;
+      --why-bg: #eff6ff; --so-bg: #f0fdf4; --tip-bg: #faf5ff;
+      --lesson-bg: #fff7ed; --convo-bg: #fdf2f8;
+    }
+    [data-theme="dark"] {
+      --bg: #0f0f13; --surface: #1a1a24; --border: #2d2d3d;
+      --text: #e2e8f0; --muted: #94a3b8; --accent: #818cf8;
+      --why-bg: #1e1b4b; --so-bg: #052e16; --tip-bg: #2e1065;
+      --lesson-bg: #431407; --convo-bg: #500724;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; }
+    .header { background: var(--accent); color: #fff; padding: 2rem; text-align: center; }
+    .header h1 { font-size: 1.8rem; font-weight: 700; }
+    .header .meta { opacity: 0.85; font-size: 0.9rem; margin-top: 0.3rem; }
+    .theme-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 0.4rem 1rem; border-radius: 999px; cursor: pointer; font-size: 0.85rem; margin-top: 1rem; }
+    .container { max-width: 800px; margin: 0 auto; padding: 1.5rem 1rem; }
+    .section { margin-bottom: 2.5rem; }
+    .section-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--accent); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; }
+    .card-headline { font-weight: 700; font-size: 1rem; margin-bottom: 0.2rem; }
+    .card-source { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .card-summary { font-size: 0.92rem; margin-bottom: 0.7rem; color: var(--text); }
+    .card-meta { font-size: 0.88rem; margin-top: 0.5rem; padding: 0.5rem 0.7rem; border-radius: 8px; }
+    .tag { font-weight: 600; margin-right: 0.3rem; }
+    .card-meta:first-of-type { background: var(--why-bg); }
+    .card-meta:last-of-type { background: var(--so-bg); }
+    .tip-box { background: var(--tip-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; }
+    .tip-title { font-weight: 700; margin-bottom: 0.5rem; }
+    .tip-example { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem; margin-top: 0.7rem; font-size: 0.88rem; overflow-x: auto; }
+    .tip-example code { font-family: 'Fira Code', monospace; }
+    .lesson-box { background: var(--lesson-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; }
+    .lesson-concept { font-weight: 700; font-size: 1rem; margin-bottom: 0.7rem; }
+    .analogy { margin-top: 0.7rem; font-size: 0.9rem; padding: 0.6rem 0.8rem; background: var(--surface); border-radius: 8px; border-left: 3px solid var(--accent); }
+    .takeaway { margin-top: 0.7rem; font-size: 0.9rem; color: var(--accent); font-weight: 600; }
+    .convo-card { background: var(--convo-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; margin-bottom: 1rem; }
+    .convo-topic { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.3rem; }
+    .convo-headline { font-weight: 700; margin-bottom: 0.5rem; }
+    .convo-drop { font-size: 0.88rem; margin-top: 0.6rem; color: var(--muted); }
+    .empty { color: var(--muted); font-style: italic; }
+    .read-time { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; text-align: center; }
+    footer { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.82rem; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>☀️ Your Morning Brief</h1>
+    <div class="meta">Generated at 03:26 AM · March 24, 2026</div>
+    <button class="theme-btn" onclick="toggleTheme()">🌙 Dark mode</button>
+  </div>
+  <div class="container">
+    <p class="read-time">⏱ ~12 min read · 6 sections</p>
+
+    <div class="section">
+      <div class="section-title">🤖 AI</div>
+      <p class='empty'>No stories found today.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📈 Markets</div>
+      <p class='empty'>No stories found today.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">💻 Tech</div>
+      <p class='empty'>No stories found today.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🛠️ Claude Code</div>
+      <p class='empty'>No stories found today.</p>
+      
+    </div>
+
+    <div class="section">
+      <div class="section-title">📚 Learn: Stock Market</div>
+      
+    <div class="lesson-box">
+      <div class="lesson-concept">📖 Today's Concept: Dollar Cost Averaging</div>
+      <p>Dollar cost averaging is a way to invest in the stock market where you put a fixed amount of money into the market at regular intervals, regardless of the current prices. This helps you reduce the impact of market fluctuations and timing risks. It's like setting aside a fixed amount each month for a savings goal, like buying a car or a house.</p>
+      <div class="analogy"><strong>Think of it like:</strong> Think of it like buying a monthly subscription to your favorite streaming service, where you pay the same amount each month, whether the prices go up or down.</div>
+      <div class="takeaway">💬 Remember: Dollar cost averaging helps you invest consistently by reducing the impact of market ups and downs.</div>
+    </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">💬 Be Smart in Conversations</div>
+      
+        <div class="convo-card">
+          <div class="convo-topic">🧠 Psychology</div>
+          <div class="convo-headline">You're more likely to be influenced by the opinions of people who are similar to you.</div>
+          <p>This phenomenon is known as 'social influence through similarity.' Research has shown that when people are surrounded by those who share similar characteristics, values, or experiences, they are more likely to adopt the opinions and behaviors of those individuals. This can be seen in everything from fashion trends to political affiliations.</p>
+          <div class="convo-drop"><em>💬 Next time someone says 'I'm just going with the crowd,' mention that research shows we're more influenced by those who are like us...</em></div>
+        </div>
+        <div class="convo-card">
+          <div class="convo-topic">🚀 Space</div>
+          <div class="convo-headline">There's a giant storm on Jupiter that's been raging for centuries.</div>
+          <p>The Great Red Spot, a persistent anticyclonic storm on Jupiter, has been continuously observed for at least 187 years and possibly much longer. The storm is so large that three Earths could fit inside it, and it's been raging for centuries due to Jupiter's unique atmospheric conditions.</p>
+          <div class="convo-drop"><em>💬 Next time someone says 'that's a long time,' mention the Great Red Spot, a storm on Jupiter that's been going strong for over 200 years...</em></div>
+        </div>
+        <div class="convo-card">
+          <div class="convo-topic">💻 Technology</div>
+          <div class="convo-headline">You're probably using a password that's been hacked already.</div>
+          <p>According to a recent study, over 50% of all passwords used online have been compromised in data breaches. This means that even if you think you're using a secure password, it's likely that hackers already have access to it. To stay safe, consider using a password manager and avoiding common password mistakes.</p>
+          <div class="convo-drop"><em>💬 Next time someone says 'my password is secure,' mention that over half of all online passwords have been hacked already...</em></div>
+        </div>
+    </div>
+  </div>
+  <footer>Built with Claude Code · Powered by Gemini &amp; NewsAPI · Delivered daily at 6 AM</footer>
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      html.setAttribute('data-theme', isDark ? '' : 'dark');
+      document.querySelector('.theme-btn').textContent = isDark ? '🌙 Dark mode' : '☀️ Light mode';
+    }
+  </script>
+</body>
+</html>
