@@ -36,12 +36,17 @@ def fetch_articles(query: str, n: int = 12) -> list[dict]:
 
 
 def ask_groq(prompt: str) -> str:
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-    )
-    return response.choices[0].message.content
+    for model in ["llama-3.1-8b-instant", "gemma2-9b-it", "llama3-8b-8192"]:
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            print(f"⚠️ Model {model} failed: {e}, trying next...")
+    raise RuntimeError("All Groq models failed.")
 
 
 def parse_json(text: str):
