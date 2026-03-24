@@ -362,7 +362,10 @@ def main():
     print("✅ index.html written.")
 
     print("🔄 Sending email...")
-    send_email(html)
+    try:
+        send_email(html)
+    except Exception as e:
+        print(f"⚠️ Email failed (website still deployed): {e}")
 
 
 if __name__ == "__main__":
