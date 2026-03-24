@@ -79,9 +79,10 @@ def top3_news(label: str, query: str) -> list[dict]:
     articles = fetch_articles(query)
     if not articles:
         return []
+    pool = articles[:10]
     blurbs = "\n\n".join(
-        f"[{i+1}] {a['title']} ({a['source']['name']})\nURL: {a.get('url','')}\n{a.get('description', '')}"
-        for i, a in enumerate(articles[:10])
+        f"[{i+1}] {a['title']} ({a['source']['name']})\n{a.get('description', '')}"
+        for i, a in enumerate(pool)
     )
     prompt = f"""You are a sharp news curator. Today is {TODAY}.
 From these {label} articles, pick the TOP 3 most important or interesting.
@@ -89,14 +90,21 @@ From these {label} articles, pick the TOP 3 most important or interesting.
 {blurbs}
 
 Return ONLY a JSON array of exactly 3 objects with these keys:
+- index     (the number in brackets, e.g. 1, 2, or 3)
 - headline  (punchy, rewritten if needed, max 12 words)
 - source    (publication name)
-- url       (copy the URL exactly as given for the article you picked)
 - summary   (2–3 clear sentences)
 - why_it_matters  (1 sentence)
 - so_what   (1 actionable or conversational takeaway)"""
     result = parse_json(ask_groq(prompt))
-    return result if isinstance(result, list) else []
+    if not isinstance(result, list):
+        return []
+    # attach URLs from original articles using the returned index
+    for item in result:
+        idx = item.get("index")
+        if idx and isinstance(idx, int) and 1 <= idx <= len(pool):
+            item["url"] = pool[idx - 1].get("url", "")
+    return result
 
 
 def stock_market_lesson() -> dict:
@@ -128,9 +136,10 @@ def smart_conversation_starters() -> list[dict]:
         # fallback: broad interesting business/culture news
         articles = fetch_articles('business OR culture OR science OR economy interesting surprising', 15)
 
+    pool = articles[:12]
     blurbs = "\n\n".join(
-        f"[{i+1}] {a['title']} ({a['source']['name']})\nURL: {a.get('url','')}\n{a.get('description', '')}"
-        for i, a in enumerate(articles[:12])
+        f"[{i+1}] {a['title']} ({a['source']['name']})\n{a.get('description', '')}"
+        for i, a in enumerate(pool)
     )
 
     prompt = f"""Today is {TODAY}. You write exactly like Morning Brew's "Be Smart in Conversations" section.
@@ -143,22 +152,29 @@ Here are today's real news articles to draw from:
 Pick the 3 most interesting/surprising stories that fit Morning Brew's vibe. Rewrite them in Morning Brew's tone — punchy, a little clever, zero fluff.
 
 Return ONLY a JSON array of 3 objects with these keys:
-- topic_emoji   (emoji + short label, e.g. "💰 Business" or "🌍 World")
-- headline      (catchy 1-liner, Morning Brew style)
-- url           (copy the URL exactly as given for the article you picked)
-- fact          (2–3 sentences written conversationally, like you're telling a smart friend)
-- drop_it       (natural way to bring this up, e.g. "Next time someone asks about X, mention...")"""
+- index       (the number in brackets, e.g. 1, 2, or 3)
+- topic_emoji (emoji + short label, e.g. "💰 Business" or "🌍 World")
+- headline    (catchy 1-liner, Morning Brew style)
+- fact        (2–3 sentences written conversationally, like you're telling a smart friend)
+- drop_it     (natural way to bring this up, e.g. "Next time someone asks about X, mention...")"""
     result = parse_json(ask_groq(prompt))
-    return result if isinstance(result, list) else []
+    if not isinstance(result, list):
+        return []
+    for item in result:
+        idx = item.get("index")
+        if idx and isinstance(idx, int) and 1 <= idx <= len(pool):
+            item["url"] = pool[idx - 1].get("url", "")
+    return result
 
 
 def claude_code_section() -> dict:
     articles = fetch_articles(
         '"Claude" OR "Anthropic" OR "Claude Code" OR "AI coding assistant" OR "AI agent developer"', 10
     )
+    pool = articles[:8]
     blurbs = "\n\n".join(
-        f"[{i+1}] {a['title']}\nURL: {a.get('url','')}\n{a.get('description', '')}"
-        for i, a in enumerate(articles[:8])
+        f"[{i+1}] {a['title']}\n{a.get('description', '')}"
+        for i, a in enumerate(pool)
     )
     prompt = f"""You are an expert on Claude Code and AI developer tools. Today is {TODAY}.
 
@@ -170,10 +186,16 @@ Do two things:
 2. Share ONE killer Claude Code tip — something non-obvious and genuinely useful for a developer's daily workflow.
 
 Return ONLY a JSON object with these keys:
-- news: array of objects with (headline, source, url — copy exactly from above, summary, why_it_matters)
+- news: array of objects with (index — the number in brackets, headline, source, summary, why_it_matters)
 - tip:  object with (title, description, example — a sample prompt or slash command to try right now)"""
     result = parse_json(ask_groq(prompt))
-    return result if isinstance(result, dict) else {"news": [], "tip": {}}
+    if not isinstance(result, dict):
+        return {"news": [], "tip": {}}
+    for item in result.get("news", []):
+        idx = item.get("index")
+        if idx and isinstance(idx, int) and 1 <= idx <= len(pool):
+            item["url"] = pool[idx - 1].get("url", "")
+    return result
 
 
 # ── HTML generation ────────────────────────────────────────────────────────────
