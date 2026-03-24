@@ -6,6 +6,7 @@ import re
 import json
 import requests
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from groq import Groq
 
 # ── Config (all from environment variables / GitHub Secrets) ───────────────────
@@ -18,7 +19,9 @@ MAILJET_SECRET    = os.environ["MAILJET_SECRET_KEY"]
 
 client = Groq(api_key=GROQ_API_KEY)
 
-TODAY = datetime.now().strftime("%B %d, %Y")
+PST = ZoneInfo("America/Los_Angeles")
+NOW_PST = datetime.now(PST)
+TODAY = NOW_PST.strftime("%B %d, %Y")
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 def fetch_articles(query: str, n: int = 12) -> list[dict]:
@@ -220,7 +223,7 @@ def story_cards_html(stories: list[dict]) -> str:
 
 
 def build_html(sections: dict) -> str:
-    now = datetime.now().strftime("%I:%M %p · %B %d, %Y")
+    now = NOW_PST.strftime("%I:%M %p PST · %B %d, %Y")
 
     # AI section
     ai_html = story_cards_html(sections.get("ai", []))
