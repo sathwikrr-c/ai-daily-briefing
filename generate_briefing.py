@@ -80,17 +80,18 @@ def top3_news(label: str, query: str) -> list[dict]:
     if not articles:
         return []
     blurbs = "\n\n".join(
-        f"[{i+1}] {a['title']} ({a['source']['name']})\n{a.get('description', '')}"
+        f"[{i+1}] {a['title']} ({a['source']['name']})\nURL: {a.get('url','')}\n{a.get('description', '')}"
         for i, a in enumerate(articles[:10])
     )
     prompt = f"""You are a sharp news curator. Today is {TODAY}.
-From these {label} articles published in the last 24 hours, pick the TOP 3 most important or interesting.
+From these {label} articles, pick the TOP 3 most important or interesting.
 
 {blurbs}
 
 Return ONLY a JSON array of exactly 3 objects with these keys:
 - headline  (punchy, rewritten if needed, max 12 words)
 - source    (publication name)
+- url       (copy the URL exactly as given for the article you picked)
 - summary   (2–3 clear sentences)
 - why_it_matters  (1 sentence)
 - so_what   (1 actionable or conversational takeaway)"""
@@ -128,7 +129,7 @@ def smart_conversation_starters() -> list[dict]:
         articles = fetch_articles('business OR culture OR science OR economy interesting surprising', 15)
 
     blurbs = "\n\n".join(
-        f"[{i+1}] {a['title']} ({a['source']['name']})\n{a.get('description', '')}"
+        f"[{i+1}] {a['title']} ({a['source']['name']})\nURL: {a.get('url','')}\n{a.get('description', '')}"
         for i, a in enumerate(articles[:12])
     )
 
@@ -144,6 +145,7 @@ Pick the 3 most interesting/surprising stories that fit Morning Brew's vibe. Rew
 Return ONLY a JSON array of 3 objects with these keys:
 - topic_emoji   (emoji + short label, e.g. "💰 Business" or "🌍 World")
 - headline      (catchy 1-liner, Morning Brew style)
+- url           (copy the URL exactly as given for the article you picked)
 - fact          (2–3 sentences written conversationally, like you're telling a smart friend)
 - drop_it       (natural way to bring this up, e.g. "Next time someone asks about X, mention...")"""
     result = parse_json(ask_groq(prompt))
@@ -155,7 +157,7 @@ def claude_code_section() -> dict:
         '"Claude" OR "Anthropic" OR "Claude Code" OR "AI coding assistant" OR "AI agent developer"', 10
     )
     blurbs = "\n\n".join(
-        f"[{i+1}] {a['title']}\n{a.get('description', '')}"
+        f"[{i+1}] {a['title']}\nURL: {a.get('url','')}\n{a.get('description', '')}"
         for i, a in enumerate(articles[:8])
     )
     prompt = f"""You are an expert on Claude Code and AI developer tools. Today is {TODAY}.
@@ -168,7 +170,7 @@ Do two things:
 2. Share ONE killer Claude Code tip — something non-obvious and genuinely useful for a developer's daily workflow.
 
 Return ONLY a JSON object with these keys:
-- news: array of objects with (headline, source, summary, why_it_matters)
+- news: array of objects with (headline, source, url — copy exactly from above, summary, why_it_matters)
 - tip:  object with (title, description, example — a sample prompt or slash command to try right now)"""
     result = parse_json(ask_groq(prompt))
     return result if isinstance(result, dict) else {"news": [], "tip": {}}
@@ -180,6 +182,7 @@ def story_cards_html(stories: list[dict]) -> str:
         return "<p class='empty'>No stories found today.</p>"
     html = ""
     for s in stories:
+        read_more = f'<a class="read-more" href="{s["url"]}" target="_blank" rel="noopener">Read more →</a>' if s.get("url") else ""
         html += f"""
         <div class="card">
           <div class="card-headline">{s.get('headline','')}</div>
@@ -191,6 +194,7 @@ def story_cards_html(stories: list[dict]) -> str:
           <div class="card-meta">
             <span class="tag so">⚡ So what</span> {s.get('so_what','')}
           </div>
+          {read_more}
         </div>"""
     return html
 
@@ -232,12 +236,14 @@ def build_html(sections: dict) -> str:
     convos = sections.get("smart_convos", [])
     convos_html = ""
     for c in convos:
+        convo_read_more = f'<a class="read-more" href="{c["url"]}" target="_blank" rel="noopener">Read more →</a>' if c.get("url") else ""
         convos_html += f"""
         <div class="convo-card">
           <div class="convo-topic">{c.get('topic_emoji','')}</div>
           <div class="convo-headline">{c.get('headline','')}</div>
           <p>{c.get('fact','')}</p>
           <div class="convo-drop"><em>💬 {c.get('drop_it','')}</em></div>
+          {convo_read_more}
         </div>"""
 
     return f"""<!DOCTYPE html>
@@ -288,6 +294,8 @@ def build_html(sections: dict) -> str:
     .convo-topic {{ font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.3rem; }}
     .convo-headline {{ font-weight: 700; margin-bottom: 0.5rem; }}
     .convo-drop {{ font-size: 0.88rem; margin-top: 0.6rem; color: var(--muted); }}
+    .read-more {{ display: inline-block; margin-top: 0.7rem; font-size: 0.85rem; font-weight: 600; color: var(--accent); text-decoration: none; }}
+    .read-more:hover {{ text-decoration: underline; }}
     .empty {{ color: var(--muted); font-style: italic; }}
     .read-time {{ font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; text-align: center; }}
     footer {{ text-align: center; padding: 2rem; color: var(--muted); font-size: 0.82rem; }}
