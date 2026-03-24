@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Daily briefing generator — fetches news, summarizes with Gemini, builds HTML + emails it."""
+"""Daily briefing generator — fetches news, summarizes with Groq, builds HTML + emails it."""
 
 import os
 import re
@@ -9,17 +9,16 @@ import requests
 from datetime import datetime, timedelta, timezone
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import google.generativeai as genai
+from groq import Groq
 
 # ── Config (all from environment variables / GitHub Secrets) ───────────────────
 NEWS_API_KEY     = os.environ["NEWS_API_KEY"]
-GEMINI_API_KEY   = os.environ["GEMINI_API_KEY"]
+GROQ_API_KEY     = os.environ["GROQ_API_KEY"]
 EMAIL_FROM       = os.environ["EMAIL_FROM"]        # your gmail address
 EMAIL_PASSWORD   = os.environ["EMAIL_APP_PASSWORD"] # gmail app password
 EMAIL_TO         = os.environ["EMAIL_TO"]           # can be same as EMAIL_FROM
 
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
+client = Groq(api_key=GROQ_API_KEY)
 
 TODAY = datetime.now().strftime("%B %d, %Y")
 
@@ -36,8 +35,13 @@ def fetch_articles(query: str, n: int = 12) -> list[dict]:
             if a.get("title") and a.get("description") and "[Removed]" not in a.get("title", "")]
 
 
-def ask_gemini(prompt: str) -> str:
-    return model.generate_content(prompt).text
+def ask_groq(prompt: str) -> str:
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.7,
+    )
+    return response.choices[0].message.content
 
 
 def parse_json(text: str):
@@ -72,7 +76,7 @@ Return ONLY a JSON array of exactly 3 objects with these keys:
 - summary   (2–3 clear sentences)
 - why_it_matters  (1 sentence)
 - so_what   (1 actionable or conversational takeaway)"""
-    result = parse_json(ask_gemini(prompt))
+    result = parse_json(ask_groq(prompt))
     return result if isinstance(result, list) else []
 
 
@@ -91,7 +95,7 @@ Return ONLY a JSON object with these keys:
 - explanation   (3–4 sentences, zero jargon, like explaining to a 15-year-old)
 - analogy       (a vivid real-world comparison that makes it stick)
 - key_takeaway  (1 sentence to remember forever)"""
-    result = parse_json(ask_gemini(prompt))
+    result = parse_json(ask_groq(prompt))
     return result if isinstance(result, dict) else {}
 
 
@@ -107,7 +111,7 @@ Return ONLY a JSON array of 3 objects with these keys:
 - headline      (1 catchy line)
 - fact          (2–3 sentences — the actual interesting substance)
 - drop_it       (a natural conversation opener, e.g. "Next time someone says X, mention that...")"""
-    result = parse_json(ask_gemini(prompt))
+    result = parse_json(ask_groq(prompt))
     return result if isinstance(result, list) else []
 
 
@@ -131,7 +135,7 @@ Do two things:
 Return ONLY a JSON object with these keys:
 - news: array of objects with (headline, source, summary, why_it_matters)
 - tip:  object with (title, description, example — a sample prompt or slash command to try right now)"""
-    result = parse_json(ask_gemini(prompt))
+    result = parse_json(ask_groq(prompt))
     return result if isinstance(result, dict) else {"news": [], "tip": {}}
 
 
